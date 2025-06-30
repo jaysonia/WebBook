@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Books Store Application</title>
+    <link rel="stylesheet" th:href="@{/main.css}" />
+</head>
+<body>
+
+<h1>Books Management</h1>
+<nav>
+    <ul>
+        <li><a th:href="@{/}">Home</a></li>
+        <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/new}">Add Book</a></li>
+        <li sec:authorize="isAuthenticated()"><a href="javascript: document.logoutForm.submit()" role="menuitem">Logout</a></li>
+        <li sec:authorize="isAnonymous()"><a th:href="@{/login}">Login</a></li>
+    </ul>
+</nav>
+<form name="logoutForm" th:action="@{/logout}" method="post" th:hidden="true">
+    <input hidden type="submit" value="Sign Out"/>
+</form>
+
+<div class="center">
+    <form th:action="@{/books}"
+          method="post"
+          th:object="${book}">
+        <table class="center">
+            <caption>
+                <h2>Add New Book</h2>
+            </caption>
+
+            <tr>
+                <th>Title:</th>
+                <td>
+                    <input type="text" th:field="*{book_name}" size="45"/>
+                </td>
+            </tr>
+
+            <tr>
+                <th>ISBN:</th>
+                <td>
+                    <input type="text" th:field="*{isbn}" size="45"/>
+                </td>
+            </tr>
+
+            <tr>
+                <th>Author:</th>
+                <td>
+                    <input type="text" th:field="*{author_name}" size="45"/>
+                </td>
+            </tr>
+
+            <tr>
+                <th>Year:</th>
+                <td>
+                    <input type="text" th:field="*{year}" size="45"/>
+                </td>
+            </tr>
+            <tr>
+                <th>Price:</th>
+                <td>
+                    <input type="text" th:field="*{price}" size="45"/>
+                </td>
+            </tr>
+            <tr>
+                <th>Quantity:</th>
+                <td>
+                    <input type="text" th:field="*{quantity}" size="45"/>
+                </td>
+            </tr>
+
+            <tr>
+                <td colspan="2" style="text-align: center;">
+                    <button type="submit">Save</button>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+
+</body>
+</html>

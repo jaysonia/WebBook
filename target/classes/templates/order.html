@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"   xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Order</title>
+    <link rel="stylesheet" th:href="@{/main.css}" />
+</head>
+<body>
+<h1>Order</h1>
+<nav>
+    <ul>
+        <li><a th:href="@{/}">Home</a></li>
+        <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/new}">Add Book</a></li>
+        <li sec:authorize="isAuthenticated()"><a href="javascript: document.logoutForm.submit()" role="menuitem">Logout</a></li>
+        <li sec:authorize="isAnonymous()"><a th:href="@{/login}">Login</a></li>
+    </ul>
+</nav>
+<div class="center">
+    <form th:action="@{/completeOrder}"
+          method="post"
+          th:object="${orders}">
+        <table class="center">
+            <caption>
+                <h2>Order</h2>
+            </caption>
+
+            <tr>
+                <th>Total Price: <span th:text="${total_price}"/> </th>
+                <td><input type="text" name="totalAmount" id="totalAmount" th:value="${total_price}" readonly/></td>
+            </tr>
+
+            <tr>
+                <th>Shipping Address:</th>
+                <td><input type="text" th:field="*{shippingAddress}" /></td>
+            </tr>
+
+            <tr>
+                <th>Credit Card:</th>
+                <td><input type="number" th:field="*{creditCard}" /></td>
+            </tr>
+            <tr>
+                <th>Expiry:</th>
+                <td><input type="number" th:field="*{expiry}" /></td>
+            </tr>
+            <tr>
+                <th>CVV:</th>
+                <td><input type="number" th:field="*{cvv}" /></td>
+            </tr>
+
+
+
+
+            <tr>
+                <td colspan="2" style="text-align: center;">
+                    <button type="submit">Save</button>
+                </td>
+
+            </tr>
+
+
+
+        </table>
+    </form>
+</div>
+</body>
+</html>

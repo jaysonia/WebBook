@@ -1,0 +1,11 @@
+services:
+  mysql:
+    container_name: 'mysql'
+    image: 'mysql:lts'
+    environment:
+      - 'MYSQL_DATABASE=bookshop'
+      - 'MYSQL_PASSWORD=secret'
+      - 'MYSQL_ROOT_PASSWORD=verysecret'
+      - 'MYSQL_USER=myuser'
+    ports:
+      - '3306:3306'

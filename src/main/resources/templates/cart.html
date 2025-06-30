@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Cart</title>
+    <link rel="stylesheet" th:href="@{/main.css}" />
+</head>
+<body>
+<h1>Cart</h1>
+<nav>
+    <ul>
+        <li><a th:href="@{/}">Home</a></li>
+        <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/new}">Add Book</a></li>
+        <li sec:authorize="isAuthenticated()"><a href="/cart">Cart</a></li>
+        <li sec:authorize="isAuthenticated()"><a href="javascript: document.logoutForm.submit()" role="menuitem">Logout</a></li>
+        <li sec:authorize="isAnonymous()"><a th:href="@{/login}">Login</a></li>
+    </ul>
+</nav>
+
+<div class="center">
+    <table class="center">
+        <caption><h2>Items in your Cart</h2></caption>
+        <tr>
+            <th>Title</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Actions</th>
+        </tr>
+        <tr th:each="cartItem : ${cartItems}">
+            <td th:text="${cartItem.getBook.getBook_name}">Book1</td>
+            <td th:text="${cartItem.getQuantity}">5</td>
+            <td th:text="${cartItem.getBook.getPrice*cartItem.getQuantity}">123456</td>
+            <td>
+                <form sec:authorize="isAuthenticated()" th:action="@{/updateCartItem}" method="post" style="display:inline;">
+                    <input type="number" id="quantity" name="quantity" min="1" th:max="${cartItem.getBook.getQuantity()}" />
+                    <button type="submit" >Add to cart</button>
+                </form>
+                <form sec:authorize="isAuthenticated()" th:action="@{/deleteCartItem/{id}(id=${cartItem.id})}" method="post" style="display:inline;">
+                    <input type="hidden" name="_method" value="delete" />
+                    <button type="submit" onclick="return confirm('Remove from cart?');">Delete</button>
+                </form>
+            </td>
+        </tr>
+        <tr>
+            <th>Total</th>
+            <td th:text="${totalPrice}"></td>
+            <td>
+                <form sec:authorize="isAuthenticated()" th:if="${totalPrice} != 0" th:action="@{/order}" method="post" style="display:inline;">
+                    <input type="hidden" name="_method" value="post" />
+                    <input type="hidden" name="totalPrice" th:value="${totalPrice}" />
+                    <button type="submit" onclick="return confirm('Complete Order?');">Order</button>
+                </form>
+            </td>
+        </tr>
+    </table>
+</div>
+
+</body>
+</html>

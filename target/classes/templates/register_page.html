@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Register</title>
+    <link rel="stylesheet" th:href="@{/main.css}">
+</head>
+<body>
+
+<h1>Registration page</h1>
+<nav>
+    <ul>
+        <li><a th:href="@{/}">Home</a></li>
+        <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/addBook}">Add Book</a></li>
+        <li sec:authorize="isAuthenticated()"><a href="javascript: document.logoutForm.submit()" role="menuitem">Logout</a></li>
+        <li sec:authorize="isAnonymous()"><a th:href="@{/login}">Login</a></li>
+    </ul>
+</nav>
+<form name="logoutForm" th:action="@{/logout}" method="post" th:hidden="true">
+    <input hidden type="submit" value="Sign Out"/>
+</form>
+<div class="center">
+    <form method="post" th:action="@{/register}" th:object="${user}">
+        <table class="center">
+            <caption>
+                <h2>Register for bookshop</h2>
+            </caption>
+
+            <tr>
+                <th>Username:</th>
+                <td><input name="username" placeholder="Username" size="45" th:field="*{username}"/></td>
+            </tr>
+            <tr>
+                <th>Password:</th>
+                <td><input name="password" type="password" placeholder="Password" size="45" th:field="*{password}"/></td>
+            </tr>
+            <tr>
+                <th>Name:</th>
+                <td><input name="name" type="text" placeholder="Name" size="45" th:field="*{name}"/></td>
+            </tr>
+            <tr>
+                <th>Surname:</th>
+                <td><input name="surname" type="text" placeholder="Surname" size="45" th:field="*{surname}"/></td>
+            </tr>
+            <tr>
+                <th>Email:</th>
+                <td><input name="email" type="email" placeholder="Email" size="45" th:field="*{email}"/></td>
+            </tr>
+            <tr>
+                <th>Date of Birth:</th>
+                <td><input name="dob" type="date" placeholder="Date of Birth" size="45" th:field="*{dob}"/></td>
+            </tr>
+            <tr>
+                <th>Address:</th>
+                <td><input name="address" type="text" placeholder="Address" size="45" th:field="*{address}"/></td>
+            </tr>
+            <tr>
+                <th>Phone:</th>
+                <td><input name="phone" type="text" placeholder="Phone" size="45" th:field="*{phone}"/></td>
+            </tr>
+            <tr>
+                <td colspan="2" style="text-align: center;">
+                    <button type="submit">Register</button>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+</body>
+</html>
+
