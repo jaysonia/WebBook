@@ -1,43 +1,50 @@
 package com.bookshop.submission.controller;
 
+import com.bookshop.submission.dto.UserDto;
 import com.bookshop.submission.exception.BookNotFoundException;
 import com.bookshop.submission.exception.CartItemNotFoundException;
 import com.bookshop.submission.model.*;
 import com.bookshop.submission.repository.*;
+import com.bookshop.submission.services.BookService;
+import com.bookshop.submission.services.CartService;
+import com.bookshop.submission.services.UserService;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.security.Principal;
 import java.util.List;
 
+@Slf4j
 @Controller
 public class CartController {
 
+    private CartService cartService;
     @Autowired
-    private CartRepository cartRepo;
-    @Autowired
-    private BookRepository bookRepo;
-    @Autowired
-    private UserRepository userRepo;
-    @Autowired
-    private CartItemsRepository cartItemsRepository;
+    private BookService bookService;
+    private UserService userService;
+
+    public CartController(CartService cartService,
+                          BookService bookService,
+                          UserService userService) {
+        this.cartService = cartService;
+        this.bookService = bookService;
+        this.userService = userService;
+    }
 
 
     @GetMapping("/cart")
-    public String home(Model model, Principal principal) {
-        User user = userRepo.findByUsername(principal.getName());
-        Cart cart = cartRepo.findByUserId(user.getId());
-        if  (cart == null) {
-            cartRepo.save(new Cart(user));
-        }
-        List<CartItems> items = cartItemsRepository.findByCart(cart);
-        BigDecimal totalPrice = new BigDecimal(0);
-        for (CartItems item : items) {
-            totalPrice = totalPrice.add(item.getBook().getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
-        }
+    public String home(Model model) {
+        User currUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Cart cart = cartService.getCart(currUser.getUsername());
+        List<CartItems> items = cartService.getCartItems(cart);
+        BigDecimal totalPrice = cartService.getCartPrice(items);
+        //get user dto from user service
+        UserDto user = userService.findByUsernameDto(currUser.getUsername());
         model.addAttribute("user", user);
         model.addAttribute("cartItems", items);
         model.addAttribute("totalPrice", totalPrice);
@@ -47,43 +54,39 @@ public class CartController {
 
     @PostMapping("/addToCart")
     public String addToCart(@RequestParam Long bookId,
-                          @RequestParam int quantity,
-                          Principal principal) throws BookNotFoundException {
-        User user = userRepo.findByUsername(principal.getName());
-        Book book = bookRepo.findById(bookId).orElseThrow(() -> new BookNotFoundException(bookId));
-        if (cartRepo.findByUserId(user.getId()) == null){
-            cartRepo.save(new Cart(user));
+                          @RequestParam int quantity) {
+        User currUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        log.info("Adding book {} to {}'s cart", bookId, currUser.getUsername());
+        Cart cart = cartService.getCart(currUser.getUsername());
+        Book book;
+        try{
+            book = bookService.findBookById(bookId);
+        } catch (BookNotFoundException e) {
+            log.error("Unable to locate book with id: " + bookId);
+            throw new RuntimeException(e);
         }
-        CartItems cartItems = cartItemsRepository.findByBook(book);
-        if (cartItems == null){
-            cartItems = new CartItems(cartRepo.findByUserId(user.getId()), book, quantity);
-        } else {
-            cartItems.setQuantity(cartItems.getQuantity() + quantity);
-            //ensure cart can't be higher than available books
-            if (cartItems.getQuantity() > cartItems.getBook().getQuantity()){
-                cartItems.setQuantity(cartItems.getBook().getQuantity());
-            }
-        }
-
-        cartItemsRepository.save(cartItems);
+        cartService.addToCart(cart, book, quantity);
         return "redirect:/";
     }
 
     @PostMapping("/updateCartItem/{id}")
     public String updateCartItem(@PathVariable(value = "id") Long id, @RequestParam int quantity) throws CartItemNotFoundException{
-        CartItems cartItem = cartItemsRepository.findById(id).orElseThrow(() -> new CartItemNotFoundException(id));
-        cartItem.setQuantity(quantity);
-        if (cartItem.getQuantity() > cartItem.getBook().getQuantity()){
-            cartItem.setQuantity(cartItem.getBook().getQuantity());
+        if(quantity > 0) {
+            cartService.updateCartItem(id, quantity);
         }
-        cartItemsRepository.save(cartItem);
         return "redirect:/cart";
     }
 
     @DeleteMapping("deleteCartItem/{id}")
     public String deleteCartItem(@PathVariable(value = "id") Long id) throws CartItemNotFoundException {
-        CartItems cartItem = cartItemsRepository.findById(id).orElseThrow(() -> new CartItemNotFoundException(id));
-        cartItemsRepository.delete(cartItem);
+        User currUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Cart cart = cartService.getCart(currUser.getUsername());
+        try{
+            cartService.removeCartItem(cart, bookService.findBookById(id));
+        } catch (BookNotFoundException e) {
+            log.error("Unable to locate book with id: " + id);
+            throw new CartItemNotFoundException(id);
+        }
         return "redirect:/cart";
     }
 }

@@ -32,6 +32,15 @@ public class Orders {
     }
 
     public Orders(User user,
+                  BigDecimal totalAmount) {
+        this.user = user;
+        this.totalAmount = totalAmount;
+        this.creditCard = 0;
+        this.expiry = 0;
+        this.cvv = 0;
+    }
+
+    public Orders(User user,
                   BigDecimal totalAmount,
                   String shippingAddress,
                   int creditCard,

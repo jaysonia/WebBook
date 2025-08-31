@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 
 @Component
@@ -42,7 +43,9 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println("Adding admin user to database");
             User user = new User();
             user.setUsername("admin");
-            user.setPassword(passwordEncoder.encode("admin"));
+            String password = PasswordGenerator(15);
+            System.out.println("Admin Password is: "+password);
+            user.setPassword(passwordEncoder.encode(password));
             Set<Role> roles = new HashSet<>();
             roles.add(roleRepository.findByName("ADMIN"));
             user.setRoles(roles);
@@ -67,5 +70,18 @@ public class DataInitializer implements CommandLineRunner {
         book2.setQuantity(5);
         bookRepo.save(book2);
 
+    }
+
+    private String PasswordGenerator(int length) {
+        String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_+=<>?";
+        Random random = new Random();
+        StringBuilder password = new StringBuilder();
+
+        for (int i = 0; i < length; i++) {
+            int index = random.nextInt(CHARACTERS.length());
+            password.append(CHARACTERS.charAt(index));
+        }
+
+        return password.toString();
     }
 }

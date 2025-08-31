@@ -1,10 +1,18 @@
 package com.bookshop.submission.security;
 
+import com.bookshop.submission.authentication.CustomAuthenticationProvider;
+import com.bookshop.submission.authentication.CustomWebAuthenticationDetailsSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationDetailsSource;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,35 +31,55 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public CustomWebAuthenticationDetailsSource authenticationDetailsSource() {
+        return new CustomWebAuthenticationDetailsSource();
+    }
+
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider() {
+        CustomAuthenticationProvider provider = new CustomAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(HttpSecurity http,
+                                                       DaoAuthenticationProvider authProvider) throws Exception {
+        return http.getSharedObject(AuthenticationManagerBuilder.class)
+                .authenticationProvider(authProvider)
+                .build();
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationDetailsSource authenticationDetailsSource) throws Exception {
         http
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/","/new", "/books", "/main.css", "/login", "/register").permitAll()
+                        .requestMatchers("/", "/books", "/main.css", "/login", "/register").permitAll()
+                        .requestMatchers("/new","/save","/delete/","/books","/cart","/user/update/2fa").hasRole("ADMIN")
+                        .requestMatchers("/cart","/user/update/2fa").hasRole("USER")
                         .anyRequest().authenticated()
                 )
                 .formLogin((form) -> form
                         .loginPage("/login")
+                        .loginProcessingUrl("/login")
+                        .defaultSuccessUrl("/")
+                        .authenticationDetailsSource(authenticationDetailsSource())
                         .permitAll()
                 )
-                .logout((logout) -> logout.permitAll());
+                .logout((logout) -> logout
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
+                        .permitAll())
+                .sessionManagement(httpSecuritySessionManagementConfigurer ->
+                        httpSecuritySessionManagementConfigurer
+                                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                                .invalidSessionUrl("/")
+                                .sessionFixation().migrateSession()
+                                .maximumSessions(1))
+                .redirectToHttps(Customizer.withDefaults());
 
         return http.build();
     }
-//    @Override
-//    protected void configure(HttpSecurity http) throws Exception {
-//        http
-//                .authorizeRequests()
-//                .antMatchers("/login", "/register").permitAll()
-//                .antMatchers("/admin/**").hasRole("ADMIN")
-//                .anyRequest().authenticated()
-//                .and()
-//                .formLogin().loginPage("/login").defaultSuccessUrl("/", true)
-//                .and()
-//                .logout().permitAll();
-//    }
-
-//    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-//        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
-//    }
 }
 
