@@ -33,7 +33,7 @@ public class CartServiceImpl implements CartService {
 
     public Cart getCart(String username) {
         User user = userService.findByUsername(username);
-        log.info("getCart username = {}", username);
+        log.info("Getting cart for username = {}", username);
         Cart cart = cartRepository.findByUserId(user.getId());
         if (cart == null) {
             cart = cartRepository.save(new Cart(user));
@@ -42,10 +42,12 @@ public class CartServiceImpl implements CartService {
     }
 
     public List<CartItems> getCartItems(Cart cart) {
+        log.info("Getting cart items for user = {}", cart.getUser().getUsername());
         return cartItemsRepository.findByCart(cart);
     }
 
     public BigDecimal getCartPrice(List<CartItems> items){
+        log.info("getting total price for cart items");
         BigDecimal totalPrice = new BigDecimal(0);
         if (items != null){
             for (CartItems item: items){
@@ -56,6 +58,7 @@ public class CartServiceImpl implements CartService {
     }
 
     public void addToCart(Cart cart, Book book, int quantity){
+        log.info("adding to cart for user = {}", cart.getUser().getUsername());
         CartItems item = cartItemsRepository.findByCartAndBook(cart, book);
         if (item != null){
             item.setQuantity(item.getQuantity() + quantity);
@@ -70,6 +73,7 @@ public class CartServiceImpl implements CartService {
     }
 
     public void removeCartItem(Cart cart, Book book){
+        log.info("removing cart for user = {}", cart.getUser().getUsername());
         CartItems item = cartItemsRepository.findByCartAndBook(cart, book);
         if (item != null){
             cartItemsRepository.delete(item);
@@ -79,6 +83,7 @@ public class CartServiceImpl implements CartService {
     }
 
     public void updateCartItem(long id, int quantity) throws CartItemNotFoundException{
+        log.info("updating cart item = {}", id);
         CartItems item = cartItemsRepository.findById(id).orElseThrow(() -> new CartItemNotFoundException(id));
         item.setQuantity(quantity);
         if (item.getQuantity() > item.getBook().getQuantity()){

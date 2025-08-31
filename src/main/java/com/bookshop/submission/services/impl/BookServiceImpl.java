@@ -22,6 +22,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public void editBook(Book book) throws BookNotFoundException {
+        log.info("Editing book with id: {}", book.getId());
         Book storedbook = bookRepo.findById(book.getId()).orElseThrow(() -> new BookNotFoundException(book.getId()));
         storedbook.setBook_name(book.getBook_name());
         storedbook.setIsbn(book.getIsbn());
@@ -33,6 +34,7 @@ public class BookServiceImpl implements BookService {
     }
 
     public void updateBookQuantity(long id, int quantity) throws BookNotFoundException {
+        log.info("Updating Book Quantity for Book with id: {}", id);
         Book storedbook = bookRepo.findById(id);
         if(storedbook == null)
             throw new BookNotFoundException(id);
@@ -46,6 +48,7 @@ public class BookServiceImpl implements BookService {
     }
 
     public void deleteBook(long id) throws BookNotFoundException {
+        log.info("Deleting a book with id: {}", id);
         Book book = bookRepo.findById(id);
         if (book != null) {
             bookRepo.delete(book);
@@ -56,10 +59,12 @@ public class BookServiceImpl implements BookService {
     }
 
     public void addBook(Book book){
+        log.info("Adding a new book with name: {}", book.getBook_name());
         bookRepo.save(book);
     }
 
     public Book findBookById(long id) throws BookNotFoundException {
+        log.info("Finding a book with id: {}", id);
         Book book = bookRepo.findById(id);
         if (book != null) {
             return bookRepo.findById(id);
@@ -70,10 +75,12 @@ public class BookServiceImpl implements BookService {
     }
 
     public List<Book> findAllBooks() {
+        log.info("Finding all books");
         return bookRepo.findAll();
     }
 
     public BigDecimal findBookPriceById(long id) throws BookNotFoundException {
+        log.info("Finding a book with id: {}", id);
         Book book = findBookById(id);
         return book.getPrice();
     }

@@ -56,8 +56,8 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests((requests) -> requests
                         .requestMatchers("/", "/books", "/main.css", "/login", "/register").permitAll()
-                        .requestMatchers("/new","/save","/delete/","/books","/cart","/user/update/2fa").hasRole("ADMIN")
-                        .requestMatchers("/cart","/user/update/2fa").hasRole("USER")
+                        .requestMatchers("/new","/save","/delete/","/books","/cart","/user/update/2fa","/updateCartItem/*").hasRole("ADMIN")
+                        .requestMatchers("/cart","/user/update/2fa","/updateCartItem/*").hasRole("USER")
                         .anyRequest().authenticated()
                 )
                 .formLogin((form) -> form

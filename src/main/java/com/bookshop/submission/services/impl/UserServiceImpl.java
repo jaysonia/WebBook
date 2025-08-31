@@ -6,6 +6,7 @@ import com.bookshop.submission.model.Role;
 import com.bookshop.submission.repository.RoleRepository;
 import com.bookshop.submission.repository.UserRepository;
 import com.bookshop.submission.services.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.jboss.aerogear.security.otp.api.Base32;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -36,6 +38,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void saveUser(UserDto userDto) {
+        log.info("Creating a new user with 2FA enabled: {}", userDto.isUsing2FA());
         User user = new User();
         user.setEmail(userDto.getEmail());
         user.setName(userDto.getName());

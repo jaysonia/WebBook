@@ -35,6 +35,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     public void makeOrder(Orders order, User user) {
+        log.info("Creating new order with id = {}", order.getId());
         Cart cart = cartService.getCart(user.getUsername());
         List<CartItems> items = cartService.getCartItems(cart);
         order.setUser(user);
@@ -60,6 +61,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     public List<Orders> getAllOrders(User user) {
+        log.info("Getting all orders for user {}", user.getUsername());
         return ordersRepository.findAllByUserId(user.getId());
     }
 }

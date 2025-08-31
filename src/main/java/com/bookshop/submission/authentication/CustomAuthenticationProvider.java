@@ -2,6 +2,7 @@ package com.bookshop.submission.authentication;
 
 import com.bookshop.submission.model.User;
 import com.bookshop.submission.repository.UserRepository;
+import com.bookshop.submission.services.LoginRateLimiter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -17,6 +18,9 @@ public class CustomAuthenticationProvider extends DaoAuthenticationProvider {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private LoginRateLimiter loginRateLimiter;
+
 
     @Override
     public Authentication authenticate(Authentication auth)
@@ -27,6 +31,10 @@ public class CustomAuthenticationProvider extends DaoAuthenticationProvider {
 
 
         User user = userRepository.findByUsername(auth.getName());
+        if (loginRateLimiter.isBlocked(user.getUsername())) {
+            throw new BadCredentialsException("Too many log attempts, please try again");
+        }
+
         if ((user == null)) {
             log.warn("User tried to login with invalid credentials, {}",auth.getName());
             throw new BadCredentialsException("Invalid username or password");
