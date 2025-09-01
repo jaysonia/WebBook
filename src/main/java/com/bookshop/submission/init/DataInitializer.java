@@ -12,8 +12,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.security.SecureRandom;
 import java.util.HashSet;
-import java.util.Random;
 import java.util.Set;
 
 @Component
@@ -43,7 +43,8 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println("Adding admin user to database");
             User user = new User();
             user.setUsername("admin");
-            String password = PasswordGenerator(15);
+            SecureRandom random = new SecureRandom();
+            String password = PasswordGenerator(random.nextInt(8,20));
             System.out.println("Admin Password is: "+password);
             user.setPassword(passwordEncoder.encode(password));
             Set<Role> roles = new HashSet<>();
@@ -74,7 +75,7 @@ public class DataInitializer implements CommandLineRunner {
 
     private String PasswordGenerator(int length) {
         String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_+=<>?";
-        Random random = new Random();
+        SecureRandom random = new SecureRandom();
         StringBuilder password = new StringBuilder();
 
         for (int i = 0; i < length; i++) {

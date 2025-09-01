@@ -71,8 +71,9 @@ public class CartController {
 
     @PostMapping("/updateCartItem/{id}")
     public String updateCartItem(@PathVariable(value = "id") Long id, @RequestParam int quantity) throws CartItemNotFoundException{
+        User currUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if(quantity > 0) {
-            cartService.updateCartItem(id, quantity);
+            cartService.updateCartItem(currUser, id, quantity);
         }
         return "redirect:/cart";
     }

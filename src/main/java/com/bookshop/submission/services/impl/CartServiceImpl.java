@@ -82,12 +82,17 @@ public class CartServiceImpl implements CartService {
         }
     }
 
-    public void updateCartItem(long id, int quantity) throws CartItemNotFoundException{
+    public void updateCartItem(User user, long id, int quantity) throws CartItemNotFoundException{
         log.info("updating cart item = {}", id);
+        Cart cart = cartRepository.findByUserId(user.getId());
         CartItems item = cartItemsRepository.findById(id).orElseThrow(() -> new CartItemNotFoundException(id));
-        item.setQuantity(quantity);
-        if (item.getQuantity() > item.getBook().getQuantity()){
-            item.setQuantity(item.getBook().getQuantity());
+        for (CartItems cartItems: cart.getItems()) {
+            if (cartItems.getBook().getId().equals(item.getBook().getId())) {
+                item.setQuantity(quantity);
+                if (item.getQuantity() > item.getBook().getQuantity()){
+                    item.setQuantity(item.getBook().getQuantity());
+                }
+            }
         }
         cartItemsRepository.save(item);
     }
