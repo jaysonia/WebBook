@@ -1,42 +1,71 @@
 package com.bookshop.submission.controller;
 
-import jakarta.servlet.http.HttpSession;
+import com.bookshop.submission.dto.UserDto;
+import com.bookshop.submission.services.UserService;
+import jakarta.validation.Valid;
+import org.jboss.aerogear.security.otp.api.Base32;
 import org.springframework.ui.Model;
-import com.bookshop.submission.model.Role;
-import com.bookshop.submission.model.User;
-import com.bookshop.submission.repository.RoleRepository;
-import com.bookshop.submission.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
 
+import java.io.UnsupportedEncodingException;
+import java.util.Map;
+
+@Slf4j
 @Controller
 public class AuthController {
 
-    @Autowired
-    private UserRepository userRepo;
+    private UserService userService;
 
-    @Autowired
-    private RoleRepository roleRepo;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    public AuthController(UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping("/register")
     public String showRegisterForm(Model model) {
-        model.addAttribute("user", new User());
+        model.addAttribute("user", new UserDto());
         return "register_page";
     }
 
     @PostMapping("/register")
-    public String register(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        Role role = roleRepo.findByName("USER");
-        user.getRoles().add(role);
-        userRepo.save(user);
-        return "redirect:/login";
+    public String register(@Valid @ModelAttribute("user") UserDto user,
+                           BindingResult result,
+                           Model model)  throws UnsupportedEncodingException {
+        log.info("Registering user {}", user.getUsername());
+        if (userService.findByUsername(user.getUsername()) != null) {
+            result.rejectValue("username", "username.exists", "Username already exists");
+        }
+        if (result.hasErrors()) {
+            log.info("Validation errors found");
+            model.addAttribute("user", user);
+            return "register_page";
+        }
+        log.info("user using 2fa {}", user.isUsing2FA());
+
+        if (user.isUsing2FA()) {
+            log.info("Using 2FA");
+            user.setSecret(Base32.random());
+            model.addAttribute("qr", userService.generateQRUrl(user));
+            userService.saveUser(user);
+            return "qrcode";
+        }
+        log.info("saving user {}", user.getUsername());
+        userService.saveUser(user);
+
+        return "redirect:/login?reg-success";
+    }
+
+    @PostMapping("/user/update/2fa")
+    @ResponseBody
+    public Map<String, String> modifyUser2FA(@RequestParam("use2FA") boolean use2FA)
+            throws UnsupportedEncodingException {
+        UserDto user = userService.updateUser2FA(use2FA);
+        if (use2FA) {
+            return Map.of("message", userService.generateQRUrl(user));
+        }
+        return Map.of("message", "2FA disabled");
     }
 
     @GetMapping("/login")

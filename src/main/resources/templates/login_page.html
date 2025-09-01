@@ -30,9 +30,28 @@
     You've been logged out.
 </div>
 <form th:action="@{/login}" method="post">
-    <input name="username" type="text" placeholder="Username">
-    <input name="password" type="password" placeholder="Password">
-    <input type="submit" value="Log in">
+    <table class="center">
+        <caption>
+            <h2>Login</h2>
+        </caption>
+        <tr>
+            <th>Username</th>
+            <td><input name="username" type="text" placeholder="Username"></td>
+        </tr>
+        <tr>
+            <th>Password</th>
+            <td><input name="password" type="password" placeholder="Password"></td>
+        </tr>
+        <tr>
+            <th>code</th>
+            <td><input type="text" name="code"></td>
+        </tr>
+        <tr>
+            <td colspan="2" style="text-align: center;">
+                <button type="submit">Log in</button>
+            </td>
+        </tr>
+    </table>
 </form>
 </body>
 </html>

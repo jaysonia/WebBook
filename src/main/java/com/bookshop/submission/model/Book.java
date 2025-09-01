@@ -8,9 +8,17 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name="books")
 public class Book {
@@ -36,68 +44,4 @@ public class Book {
 
     @Min(value=0)
     private int quantity;
-
-    public Book() {
-        super();
-    }
-    public Book(Long id, String book_name, String author_name, String isbn, int year, BigDecimal price, int quantity) {
-        this.id = id;
-        this.book_name = book_name;
-        this.author_name = author_name;
-        this.isbn = isbn;
-        this.price = price;
-        this.year = year;
-        this.quantity = quantity;
-    }
-
-    public String getBook_name() {
-        return book_name;
-    }
-
-    public void setBook_name(String book_name) {
-        this.book_name = book_name;
-    }
-
-    public String getAuthor_name() {
-        return author_name;
-    }
-    public void setAuthor_name(String author_name) {
-        this.author_name = author_name;
-    }
-
-    public String getIsbn() {
-        return isbn;
-    }
-
-    public void setIsbn(String isbn) {
-        this.isbn = isbn;
-    }
-
-    public int getYear() {
-        return year;
-    }
-
-    public void setYear(int year) {
-        this.year = year;
-    }
-
-    public BigDecimal getPrice() {
-        return price;
-    }
-
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
-
-    public int getQuantity() {
-        return quantity;
-    }
 }
