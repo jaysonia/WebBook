@@ -35,7 +35,7 @@ public class CustomAuthenticationProvider extends DaoAuthenticationProvider {
             throw new BadCredentialsException("Too many log attempts, please try again");
         }
 
-        if ((user == null)) {
+        if (user == null) {
             log.warn("User tried to login with invalid credentials, {}",auth.getName());
             throw new BadCredentialsException("Invalid username or password");
         }
