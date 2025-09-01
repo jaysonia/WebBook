@@ -78,7 +78,12 @@ public class SecurityConfig {
                                 .invalidSessionUrl("/")
                                 .sessionFixation().migrateSession()
                                 .maximumSessions(1))
-                .redirectToHttps(Customizer.withDefaults());
+                .redirectToHttps(Customizer.withDefaults())
+                .headers(httpSecurityHeadersConfigurer -> httpSecurityHeadersConfigurer
+                        .frameOptions(frameOptionsConfig -> frameOptionsConfig.deny())
+                        .contentSecurityPolicy(contentSecurityPolicyConfig -> contentSecurityPolicyConfig
+                                .policyDirectives("default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'")))
+        ;
 
         return http.build();
     }
